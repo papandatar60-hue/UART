@@ -1,0 +1,87 @@
+// ===== SLAVE UART =====
+
+#include <SoftwareSerial.h>
+
+// RX, TX
+SoftwareSerial mySerial(2, 3);
+
+// potentiometer
+int potPin = A0;
+int potValue;
+
+// ultrasonic
+int trigPin = 8;
+int echoPin = 9;
+
+long duration;
+int distance;
+
+void setup() {
+
+  Serial.begin(9600);
+
+  mySerial.begin(9600);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+}
+
+void loop() {
+
+  // ===== BACA POTENTIOMETER =====
+  potValue = analogRead(potPin);
+
+  // ===== BACA ULTRASONIC =====
+
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+
+  distance = duration * 0.034 / 2;
+
+  // ===== KIRIM DATA UART =====
+
+  mySerial.print("Pot:");
+  mySerial.print(potValue);
+
+  mySerial.print(",Jarak:");
+  mySerial.println(distance);
+
+  delay(1000);
+}
+
+// ===== MASTER UART =====
+
+#include <SoftwareSerial.h>
+
+// RX, TX
+SoftwareSerial mySerial(2, 3);
+
+String dataMasuk;
+
+void setup() {
+
+  Serial.begin(9600);
+
+  mySerial.begin(9600);
+}
+
+void loop() {
+
+  // cek data masuk
+  if(mySerial.available()) {
+
+    // baca data
+    dataMasuk = mySerial.readStringUntil('\n');
+
+    // tampilkan
+    Serial.print("Data dari Slave: ");
+    Serial.println(dataMasuk);
+  }
+}
