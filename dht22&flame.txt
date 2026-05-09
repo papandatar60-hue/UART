@@ -1,0 +1,74 @@
+// ===== SLAVE UART =====
+
+#include <DHT.h>
+
+#define DHTPIN 2
+#define DHTTYPE DHT22
+
+DHT dht(DHTPIN, DHTTYPE);
+
+int flamePin = 7;
+
+float suhu;
+float kelembapan;
+
+int flameValue;
+
+void setup() {
+
+  Serial.begin(9600);
+
+  dht.begin();
+
+  pinMode(flamePin, INPUT);
+}
+
+void loop() {
+
+  // ===== BACA DHT22 =====
+  suhu = dht.readTemperature();
+
+  kelembapan = dht.readHumidity();
+
+  // ===== BACA FLAME =====
+  flameValue = digitalRead(flamePin);
+
+  // ===== KIRIM DATA =====
+
+  Serial.print("Suhu:");
+  Serial.print(suhu);
+
+  Serial.print(",Kelembapan:");
+  Serial.print(kelembapan);
+
+  Serial.print(",Api:");
+
+  if(flameValue == LOW){
+    Serial.println("Terdeteksi");
+  }
+  else{
+    Serial.println("Tidak");
+  }
+
+  delay(2000);
+}
+
+// ===== MASTER UART =====
+
+String dataMasuk;
+
+void setup() {
+
+  Serial.begin(9600);
+}
+
+void loop() {
+
+  if(Serial.available()){
+
+    dataMasuk = Serial.readStringUntil('\n');
+
+    Serial.print("Data dari Slave: ");
+    Serial.println(dataMasuk);
+  }
+}
