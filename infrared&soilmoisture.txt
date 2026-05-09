@@ -1,70 +1,71 @@
-// ===== SLAVE UART =====
+// ===== SLAVE UART TINKERCAD =====
 
-// pin sensor
+#include <SoftwareSerial.h>
+
+// RX, TX
+SoftwareSerial mySerial(2, 3);
+
 int irPin = 7;
 int soilPin = A0;
 
-// variabel sensor
 int irValue;
 int soilValue;
 
 void setup() {
 
-  // UART
   Serial.begin(9600);
 
-  // setup pin
+  mySerial.begin(9600);
+
   pinMode(irPin, INPUT);
 }
 
 void loop() {
 
-  // ===== BACA INFRARED =====
+  // baca sensor
   irValue = digitalRead(irPin);
 
-  // ===== BACA SOIL MOISTURE =====
   soilValue = analogRead(soilPin);
 
-  // ===== KIRIM DATA =====
-
-  // infrared
-  Serial.print("IR:");
+  // kirim UART
+  mySerial.print("IR:");
 
   if(irValue == LOW){
-    Serial.print("AdaObjek");
+    mySerial.print("Ada");
   }
   else{
-    Serial.print("TidakAda");
+    mySerial.print("Tidak");
   }
 
-  Serial.print(",");
-
-  // soil moisture
-  Serial.print("Soil:");
-  Serial.println(soilValue);
+  mySerial.print(",Soil:");
+  mySerial.println(soilValue);
 
   delay(1000);
 }
 
-// ===== MASTER UART =====
+// ===== MASTER UART TINKERCAD =====
+
+#include <SoftwareSerial.h>
+
+// RX, TX
+SoftwareSerial mySerial(2, 3);
 
 String dataMasuk;
 
 void setup() {
 
   Serial.begin(9600);
+
+  mySerial.begin(9600);
 }
 
 void loop() {
 
-  // cek data
-  if(Serial.available()) {
+  if(mySerial.available()) {
 
-    // baca data
-    dataMasuk = Serial.readStringUntil('\n');
+    dataMasuk = mySerial.readStringUntil('\n');
 
-    // tampilkan
-    Serial.print("Data dari Slave: ");
+    Serial.print("Data: ");
     Serial.println(dataMasuk);
   }
 }
