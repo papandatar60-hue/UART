@@ -1,0 +1,70 @@
+// ===== SLAVE UART =====
+
+// pin sensor
+int irPin = 7;
+int soilPin = A0;
+
+// variabel sensor
+int irValue;
+int soilValue;
+
+void setup() {
+
+  // UART
+  Serial.begin(9600);
+
+  // setup pin
+  pinMode(irPin, INPUT);
+}
+
+void loop() {
+
+  // ===== BACA INFRARED =====
+  irValue = digitalRead(irPin);
+
+  // ===== BACA SOIL MOISTURE =====
+  soilValue = analogRead(soilPin);
+
+  // ===== KIRIM DATA =====
+
+  // infrared
+  Serial.print("IR:");
+
+  if(irValue == LOW){
+    Serial.print("AdaObjek");
+  }
+  else{
+    Serial.print("TidakAda");
+  }
+
+  Serial.print(",");
+
+  // soil moisture
+  Serial.print("Soil:");
+  Serial.println(soilValue);
+
+  delay(1000);
+}
+
+// ===== MASTER UART =====
+
+String dataMasuk;
+
+void setup() {
+
+  Serial.begin(9600);
+}
+
+void loop() {
+
+  // cek data
+  if(Serial.available()) {
+
+    // baca data
+    dataMasuk = Serial.readStringUntil('\n');
+
+    // tampilkan
+    Serial.print("Data dari Slave: ");
+    Serial.println(dataMasuk);
+  }
+}

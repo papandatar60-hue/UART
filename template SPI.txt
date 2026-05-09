@@ -1,0 +1,83 @@
+// ===== SLAVE SPI =====
+
+#include <SPI.h>
+
+volatile char dataKirim = '0';
+
+// variabel sensor
+int sensor1;
+int sensor2;
+
+void setup() {
+
+  // MISO output
+  pinMode(MISO, OUTPUT);
+
+  // aktif sebagai slave
+  SPCR |= _BV(SPE);
+
+  // interrupt SPI
+  SPI.attachInterrupt();
+
+  // setup sensor
+  pinMode(A0, INPUT);
+  pinMode(7, INPUT);
+}
+
+void loop() {
+
+  // ===== BACA SENSOR =====
+  sensor1 = analogRead(A0);
+
+  sensor2 = digitalRead(7);
+
+  // contoh logika sederhana
+  if(sensor1 > 500 || sensor2 == 1){
+    dataKirim = '1';
+  }
+  else{
+    dataKirim = '0';
+  }
+
+  delay(500);
+}
+
+// interrupt SPI
+ISR (SPI_STC_vect) {
+
+  SPDR = dataKirim;
+}
+
+// ===== MASTER SPI =====
+
+#include <SPI.h>
+
+char dataTerima;
+
+void setup() {
+
+  Serial.begin(9600);
+
+  SPI.begin();
+
+  pinMode(10, OUTPUT);
+
+  digitalWrite(10, HIGH);
+}
+
+void loop() {
+
+  // pilih slave
+  digitalWrite(10, LOW);
+
+  // minta data
+  dataTerima = SPI.transfer(0);
+
+  // selesai komunikasi
+  digitalWrite(10, HIGH);
+
+  Serial.print("Data dari Slave: ");
+  Serial.println(dataTerima);
+
+  delay(1000);
+}
