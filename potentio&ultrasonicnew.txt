@@ -1,0 +1,114 @@
+// ===== SLAVE SPI =====
+
+#include <SPI.h>
+
+volatile byte dataKirim = 0;
+
+// potentiometer
+int potPin = A0;
+int potValue;
+
+// ultrasonic PING)))
+int pingPin = 8;
+
+long duration;
+int distance;
+
+void setup() {
+
+  // SPI slave
+  pinMode(MISO, OUTPUT);
+
+  SPCR |= _BV(SPE);
+
+  SPI.attachInterrupt();
+}
+
+void loop() {
+
+  // ===== BACA POTENTIOMETER =====
+  potValue = analogRead(potPin);
+
+  // ===== BACA ULTRASONIC =====
+
+  // kirim trigger
+  pinMode(pingPin, OUTPUT);
+
+  digitalWrite(pingPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(pingPin, HIGH);
+  delayMicroseconds(5);
+
+  digitalWrite(pingPin, LOW);
+
+  // baca pantulan
+  pinMode(pingPin, INPUT);
+
+  duration = pulseIn(pingPin, HIGH);
+
+  // konversi cm
+  distance = duration * 0.034 / 2;
+
+  // ===== LOGIKA =====
+
+  if(potValue > 500 || distance < 10) {
+
+    dataKirim = 1;
+  }
+  else {
+
+    dataKirim = 0;
+  }
+
+  delay(100);
+}
+
+// ===== SPI INTERRUPT =====
+ISR (SPI_STC_vect) {
+
+  SPDR = dataKirim;
+}
+
+// ===== MASTER SPI =====
+
+#include <SPI.h>
+
+byte dataTerima;
+
+void setup() {
+
+  Serial.begin(9600);
+
+  SPI.begin();
+
+  pinMode(10, OUTPUT);
+
+  digitalWrite(10, HIGH);
+}
+
+void loop() {
+
+  // aktifkan slave
+  digitalWrite(10, LOW);
+
+  // baca SPI
+  dataTerima = SPI.transfer(0);
+
+  // nonaktifkan slave
+  digitalWrite(10, HIGH);
+
+  // tampilkan hasil
+  Serial.print("Status: ");
+
+  if(dataTerima == 1) {
+
+    Serial.println("AKTIF");
+  }
+  else {
+
+    Serial.println("NORMAL");
+  }
+
+  delay(1000);
+}
