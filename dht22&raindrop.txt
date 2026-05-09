@@ -1,0 +1,62 @@
+#include "DHT.h"
+
+#define DHTPIN 2     
+#define DHTTYPE DHT22
+#define RAINPIN A0
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(9600); // Pastikan Baud Rate sama dengan Master
+  dht.begin();
+}
+
+void loop() {
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  int rain = analogRead(RAINPIN);
+
+  // Validasi sensor
+  if (isnan(h) || isnan(t)) return;
+
+  // Mengirim data dengan format: Suhu,Kelembaban,Rain
+  // Gunakan Serial.print untuk menyambung, Serial.println untuk mengakhiri pesan
+  Serial.print(t);
+  Serial.print(",");
+  Serial.print(h);
+  Serial.print(",");
+  Serial.println(rain); 
+
+  delay(2000); // DHT22 butuh jeda minimal 2 detik
+}
+
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("--- Master Ready ---");
+}
+
+void loop() {
+  // Cek apakah ada data masuk dari Slave
+  if (Serial.available() > 0) {
+    // Membaca string sampai akhir baris
+    String dataInput = Serial.readStringUntil('\n');
+    
+    // Proses Parsing (Memecah data berdasarkan koma)
+    int comma1 = dataInput.indexOf(',');
+    int comma2 = dataInput.indexOf(',', comma1 + 1);
+
+    if (comma1 != -1 && comma2 != -1) {
+      String suhu = dataInput.substring(0, comma1);
+      String lembap = dataInput.substring(comma1 + 1, comma2);
+      String hujan = dataInput.substring(comma2 + 1);
+
+      // Menampilkan hasil ke Serial Monitor Master
+      Serial.println("--- Data dari Slave ---");
+      Serial.print("Suhu: "); Serial.print(suhu); Serial.println(" C");
+      Serial.print("Kelembaban: "); Serial.print(lembap); Serial.println(" %");
+      Serial.print("Nilai Hujan: "); Serial.println(hujan);
+      Serial.println("-----------------------");
+    }
+  }
+}
