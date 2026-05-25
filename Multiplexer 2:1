@@ -1,0 +1,59 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity mux21 is
+    Port (
+        D0 : in STD_LOGIC;
+        D1 : in STD_LOGIC;
+        Sel : in STD_LOGIC;
+        Y : out STD_LOGIC
+    );
+end mux21;
+
+architecture Dataflow of mux21 is
+begin
+    Y <= D1 when Sel = '1' else D0;
+end Dataflow;
+
+
+//------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity tb_mux21 is
+end tb_mux21;
+
+architecture behavior of tb_mux21 is
+
+component mux21
+    Port (
+        D0 : in STD_LOGIC;
+        D1 : in STD_LOGIC;
+        Sel : in STD_LOGIC;
+        Y : out STD_LOGIC
+    );
+end component;
+
+signal D0, D1, Sel, Y : STD_LOGIC := '0';
+
+begin
+
+UUT: mux21 port map(
+    D0 => D0,
+    D1 => D1,
+    Sel => Sel,
+    Y => Y
+);
+
+stim_proc: process
+begin
+    D0 <= '1';
+    D1 <= '0';
+
+    Sel <= '0'; wait for 100 ns;
+    Sel <= '1'; wait for 100 ns;
+
+    wait;
+end process;
+
+end behavior;
